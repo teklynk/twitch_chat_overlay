@@ -1,10 +1,9 @@
-# Twitch Horizontal Chat Overlay
+# Twitch Chat Overlay
 
 ## What is this?
-A clean, ticker-style horizontal chat overlay for Twitch streamers. Designed to be placed at the top or bottom of your stream, it allows chat messages to flow across the screen in a single line, making it ideal for minimalist or high-action layouts where vertical space is limited.
+A clean chat overlay for Twitch streamers.
 
 ## Features
-- **Horizontal "Push" Flow**: New messages enter from the right and push older messages toward the left edge of the screen.
 - **Multiple Stylized Themes**: Includes several built-in themes like "Cyber Orbitron" (Neon/Cyberpunk), "Pink Comfortaa", and a "Twitchy" dark mode style.
 - **Emote Support**: Fully supports native Twitch emotes, BetterTTV, and 7TV (Global and Channel) emotes.
 - **High Performance**: Automatically prunes older messages from the DOM to ensure the overlay stays lightweight during long broadcast sessions.
