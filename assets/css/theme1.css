@@ -21,3 +21,7 @@ body {
 .chat-name {
     text-transform: uppercase;
 }
+
+.chat-colon {
+    display: none;
+}

@@ -27,5 +27,10 @@ body {
 }
 
 .chat-message {
+    margin-top: 0.2em;
     color: #fff;
+}
+
+.chat-colon {
+  display: none;
 }
