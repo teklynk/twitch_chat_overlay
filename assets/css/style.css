@@ -37,8 +37,11 @@ body {
   opacity: 1;
   margin: 0 0.2em 0 0.2em;
   padding-left: 0.2em;
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
   vertical-align: middle;
   text-shadow: 1px 1px #000000;
   flex-shrink: 0;
@@ -55,9 +58,13 @@ body {
 .chat-message {
   color: #fff;
   text-align: left;
-  display: inline-flex;
-  align-items: center;
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
+  display: block;
   line-break: normal;
+  white-space: normal;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 
@@ -70,9 +77,10 @@ body {
 
 .chat-name {
   color: #6441A4;
-  display: inline;
+  display: inline-block;
   text-align: left;
   padding-left: 0;
+  overflow-wrap: anywhere;
 }
 
 .emoticon {
@@ -141,10 +149,10 @@ div#chat {
   flex-direction: column;
   justify-content: flex-end;
   align-items: stretch;
-  width: 100%;
+  width: 95%;
   height: 100%;
   box-sizing: border-box;
-  padding: 0.5em;
+  padding: 1.5em;
   gap: 0.4em;
   overflow-y: auto;
   overflow-x: hidden;
