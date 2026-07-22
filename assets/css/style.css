@@ -8,6 +8,7 @@ body {
   padding: 0;
   overflow: hidden;
   background: transparent;
+  mask-image: linear-gradient(to bottom, transparent 0%, #000000 20%);
 }
 
 body {
