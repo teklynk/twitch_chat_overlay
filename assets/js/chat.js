@@ -1,5 +1,11 @@
 const params = new URLSearchParams(window.location.search);
-const channel = params.get('channel').toLowerCase().trim();
+const channelNames = (params.get("channel") || "")
+  .split(",")
+  .map((name) => name.trim().toLowerCase().replace(/^#/, ""))
+  .filter(Boolean);
+
+const channel = channelNames[0] || "twitch";
+const multipleChannels = channelNames.length > 1;
 
 // Theme selection logic
 const themeOption = params.get('themeOption');
@@ -40,7 +46,7 @@ let chat = document.getElementById("chat"),
       skipUpdatingEmotesets: true,
     },
     connection: { reconnect: true },
-    channels: [channel],
+    channels: channelNames.length ? channelNames : [channel],
   },
   client = new tmi.client(clientOptions);
 
@@ -151,46 +157,55 @@ async function loadBadgeDefinitions(channelName) {
   mergeBadgeDefinitions(badgeDefinitions, channelData);
 }
 
-loadBadgeDefinitions(channel.replace(/^#/, ""));
+// Fetch badge data for each channel
+(channelNames.length ? channelNames : [channel]).forEach((channelName) => {
+  loadBadgeDefinitions(channelName);
+});
 
 // Fetch BTTV emotes (Global + Channel) via gateway on load
 if (showBttvEmotes) {
-  fetch(`https://twitchapi.teklynk.com/getbttvemotes.php?channel=${channel}`)
-    .then(res => res.json())
-    .then(data => {
-      if (Array.isArray(data)) {
-        data.forEach(emote => bttvEmotes[emote.code] = emote.id);
-      }
-    });
+  (channelNames.length ? channelNames : [channel]).forEach((channelName) => {
+    fetch(`https://twitchapi.teklynk.com/getbttvemotes.php?channel=${channelName}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          data.forEach((emote) => (bttvEmotes[emote.code] = emote.id));
+        }
+      });
+  });
 }
 
 // Fetch FFZ emotes (Global + Channel) via gateway on load
 if (showFfzEmotes) {
-  fetch(`https://twitchapi.teklynk.com/getffzemotes.php?channel=${channel}`)
-    .then(res => res.json())
-    .then(data => {
-      if (Array.isArray(data)) {
-        data.forEach(emote => ffzEmotes[emote.code] = emote.id);
-      }
-    });
+  (channelNames.length ? channelNames : [channel]).forEach((channelName) => {
+    fetch(`https://twitchapi.teklynk.com/getffzemotes.php?channel=${channelName}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          data.forEach((emote) => (ffzEmotes[emote.code] = emote.id));
+        }
+      });
+  });
 }
 
 // Fetch 7TV emotes (Global + Channel) via gateway on load
 if (show7tvEmotes) {
-  fetch(`https://twitchapi.teklynk.com/get7tvemotes.php?channel=${channel}`)
-    .then(res => res.json())
-    .then(data => {
-      const processEmotes = (emotesArray) => {
-        if (Array.isArray(emotesArray)) {
-          emotesArray.forEach(emote => {
-            seventvEmotes[emote.name] = emote.id;
-          });
-        }
-      };
+  (channelNames.length ? channelNames : [channel]).forEach((channelName) => {
+    fetch(`https://twitchapi.teklynk.com/get7tvemotes.php?channel=${channelName}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const processEmotes = (emotesArray) => {
+          if (Array.isArray(emotesArray)) {
+            emotesArray.forEach((emote) => {
+              seventvEmotes[emote.name] = emote.id;
+            });
+          }
+        };
 
-      if (data.emote_set) processEmotes(data.emote_set.emotes);
-      processEmotes(data.emotes);
-    });
+        if (data.emote_set) processEmotes(data.emote_set.emotes);
+        processEmotes(data.emotes);
+      });
+  });
 }
 
 function dehash(channel) {
@@ -343,7 +358,6 @@ function handleChat(channel, user, message, self) {
   }
 
   chatChannel.className = "chat-channel";
-  chatChannel.innerHTML = chan;
 
   chatName.className = "chat-name";
   chatName.style.color = color;
@@ -354,14 +368,17 @@ function handleChat(channel, user, message, self) {
   chatColon.textContent = ":";
 
   chatMessage.className = "chat-message";
-
   chatMessage.innerHTML = formatEmotes(message, user.emotes);
 
   const chatUser = document.createElement("span");
   chatUser.className = "chat-user";
 
+  if (multipleChannels) {
+    chatChannel.textContent = `[${chan}] `;
+    chatUser.appendChild(chatChannel);
+  }
+
   if (showBadges) chatLine.appendChild(badges(chan, user, self));
-  if (client.opts.channels.length > 1) chatLine.appendChild(chatChannel);
   chatUser.appendChild(chatName);
   chatUser.appendChild(chatColon);
   chatLine.appendChild(chatUser);
@@ -374,9 +391,7 @@ function handleChat(channel, user, message, self) {
   }
 
   if (fadeOutTime > 0) {
-    // use a CSS animation for a gradual fade; set inline so each line uses the same timing
     chatLine.style.animation = `chat-fade-out ${FADE_DURATION}s ease ${fadeOutTime}s 1 forwards`;
-    // remove the element after delay+duration to keep DOM clean
     setTimeout(() => {
       if (chatLine.parentNode === chat) chat.removeChild(chatLine);
     }, (fadeOutTime + FADE_DURATION) * 1000);
