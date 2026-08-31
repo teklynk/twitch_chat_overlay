@@ -7,6 +7,10 @@ const channelNames = (params.get("channel") || "")
 const channel = channelNames[0] || "twitch";
 const multipleChannels = channelNames.length > 1;
 
+function normalizeChannelName(channelName) {
+  return String(channelName || "").trim().replace(/^#/, "").toLowerCase();
+}
+
 // Theme selection logic
 const themeOption = params.get('themeOption');
 if (themeOption) {
@@ -52,7 +56,8 @@ let chat = document.getElementById("chat"),
 
 async function resolveChannelId(channelName) {
   try {
-    const res = await fetch(`https://api.ivr.fi/twitch/resolve/${encodeURIComponent(channelName)}`);
+    const safeChannelName = normalizeChannelName(channelName);
+    const res = await fetch(`https://api.ivr.fi/twitch/resolve/${encodeURIComponent(safeChannelName)}`);
     const data = await res.json();
     return data?.id || null;
   } catch (err) {
@@ -148,11 +153,12 @@ function mergeBadgeDefinitions(target, payload) {
 }
 
 async function loadBadgeDefinitions(channelName) {
+  const safeChannelName = normalizeChannelName(channelName);
   const globalData = await safeFetchJson("https://api.ivr.fi/v2/twitch/badges/global");
   mergeBadgeDefinitions(badgeDefinitions, globalData);
 
   const channelData = await safeFetchJson(
-    `https://api.ivr.fi/v2/twitch/badges/channel?login=${encodeURIComponent(channelName)}`
+    `https://api.ivr.fi/v2/twitch/badges/channel?login=${encodeURIComponent(safeChannelName)}`
   );
   mergeBadgeDefinitions(badgeDefinitions, channelData);
 }
@@ -165,7 +171,8 @@ async function loadBadgeDefinitions(channelName) {
 // Fetch BTTV emotes (Global + Channel) via gateway on load
 if (showBttvEmotes) {
   (channelNames.length ? channelNames : [channel]).forEach((channelName) => {
-    fetch(`https://twitchapi.teklynk.com/getbttvemotes.php?channel=${channelName}`)
+    const safeChannelName = normalizeChannelName(channelName);
+    fetch(`https://twitchapi.teklynk.com/getbttvemotes.php?channel=${safeChannelName}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -178,7 +185,8 @@ if (showBttvEmotes) {
 // Fetch FFZ emotes (Global + Channel) via gateway on load
 if (showFfzEmotes) {
   (channelNames.length ? channelNames : [channel]).forEach((channelName) => {
-    fetch(`https://twitchapi.teklynk.com/getffzemotes.php?channel=${channelName}`)
+    const safeChannelName = normalizeChannelName(channelName);
+    fetch(`https://twitchapi.teklynk.com/getffzemotes.php?channel=${safeChannelName}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -191,7 +199,8 @@ if (showFfzEmotes) {
 // Fetch 7TV emotes (Global + Channel) via gateway on load
 if (show7tvEmotes) {
   (channelNames.length ? channelNames : [channel]).forEach((channelName) => {
-    fetch(`https://twitchapi.teklynk.com/get7tvemotes.php?channel=${channelName}`)
+    const safeChannelName = normalizeChannelName(channelName);
+    fetch(`https://twitchapi.teklynk.com/get7tvemotes.php?channel=${safeChannelName}`)
       .then((res) => res.json())
       .then((data) => {
         const processEmotes = (emotesArray) => {
@@ -374,7 +383,8 @@ function handleChat(channel, user, message, self) {
   chatUser.className = "chat-user";
 
   if (multipleChannels) {
-    chatChannel.textContent = `[${chan}] `;
+    chatChannel.textContent = `[${chan}]`;
+    chatChannel.style.marginRight = "0.35rem";
     chatUser.appendChild(chatChannel);
   }
 
