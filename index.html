@@ -189,6 +189,15 @@
             </select>
         </div>
 
+        <div class="form-label-group mb-4">
+            <label for="ignore">Ignore usernames</label>
+            <input type="text" id="ignore" class="form-control shadow" value=""
+                placeholder="streamelements,nightbot,streamlabs,moobot">
+            <div>
+                <small class="muted">Separate usernames with commas</small>
+            </div>
+        </div>
+
         <div class="form-check mb-2">
             <input class="form-check-input shadow" type="checkbox" value="" id="useColor" checked>
             <label class="form-check-label" for="useColor">
@@ -310,7 +319,9 @@
             if (localStorage.getItem("TwitchChatThemeOption")) {
                 document.getElementById("themeOption").value = localStorage.getItem("TwitchChatThemeOption");
             }
-
+            if (localStorage.getItem("TwitchChatIgnore")) {
+                document.getElementById("ignore").value = localStorage.getItem("TwitchChatIgnore");
+            }
             if (localStorage.getItem("TwitchChatShowBadges")) {
                 let isChecked = (localStorage.getItem("TwitchChatShowBadges") === 'true');
                 document.getElementById("showBadges").checked = isChecked;
@@ -369,6 +380,10 @@
 
         document.getElementById("themeOption").onchange = function () {
             localStorage.setItem("TwitchChatThemeOption", this.value);
+        };
+
+        document.getElementById("ignore").oninput = function () {
+            localStorage.setItem("TwitchChatIgnore", this.value.toLowerCase());
         };
 
         document.getElementById("useColor").onchange = function () {
@@ -432,6 +447,7 @@
             let show7tvEmotes = document.getElementById("show7tvEmotes").checked;
             let showFfzEmotes = document.getElementById("showFfzEmotes").checked;
             let onlySpecialUsers = document.getElementById("onlySpecialUsers").checked;
+            let ignore = document.getElementById("ignore").value.trim();
             let fadeOutTime = document.getElementById("fadeOutTime").value;
             let maxMessages = document.getElementById("maxMessages").value;
 
@@ -452,7 +468,7 @@
             if (!validationError) {
                 // build overlay url
                 let srcURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
-                let fullUrl = srcURL + "chat.html?channel=" + mainChannel + "&themeOption=" + themeOption + "&useColor=" + useColor + "&showBadges=" + showBadges + "&showBttvEmotes=" + showBttvEmotes + "&show7tvEmotes=" + show7tvEmotes + "&showFfzEmotes=" + showFfzEmotes + "&onlySpecialUsers=" + onlySpecialUsers + "&fadeOutTime=" + fadeOutTime + "&maxMessages=" + maxMessages;
+                let fullUrl = srcURL + "chat.html?channel=" + mainChannel + "&themeOption=" + themeOption + "&useColor=" + useColor + "&showBadges=" + showBadges + "&showBttvEmotes=" + showBttvEmotes + "&show7tvEmotes=" + show7tvEmotes + "&showFfzEmotes=" + showFfzEmotes + "&onlySpecialUsers=" + onlySpecialUsers + "&ignore=" + encodeURIComponent(ignore) + "&fadeOutTime=" + fadeOutTime + "&maxMessages=" + maxMessages;
                 fullUrl = fullUrl.replace("index.htmlchat.html", "chat.html");
                 document.getElementById("overlaylink").classList.remove("hide");
                 document.getElementById("overlaylink").innerHTML = "<p>Add this link as a browser source in OBS.<br>" +

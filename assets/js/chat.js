@@ -28,6 +28,12 @@ const showBttvEmotes = params.get('showBttvEmotes') === 'true'; // Show BetterTT
 const showFfzEmotes = params.get('showFfzEmotes') === 'true'; // Show FFZ emotes
 const show7tvEmotes = params.get('show7tvEmotes') === 'true'; // Show 7TV emotes
 const onlySpecialUsers = params.get('onlySpecialUsers') === 'true'; // Only show messages from subs, mods, vips
+const ignoredUsernames = new Set(
+  (params.get('ignore') || '')
+    .split(',')
+    .map(normalizeChannelName)
+    .filter(Boolean)
+);
 const maxMessages = (() => {
   const value = parseInt(params.get('maxMessages'), 10);
   return Number.isInteger(value) && value > 0 ? value : 50;
@@ -338,14 +344,18 @@ function isSpecialUser(user, chan) {
 }
 
 function handleChat(channel, user, message, self) {
-  let chan = dehash(channel);
+  // Ignore messages from users in the ignoredUsernames set
+  if (ignoredUsernames.has(normalizeChannelName(user.username))) {
+    return;
+  }
 
   // Filter messages if onlySpecialUsers is enabled
   if (onlySpecialUsers && !isSpecialUser(user, chan)) {
     return;
   }
 
-  let name = user.username,
+  let chan = dehash(channel),
+    name = user.username,
     chatLine = document.createElement("div"),
     chatChannel = document.createElement("span"),
     chatName = document.createElement("span"),
